@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Project</string>
+    <string name="back">back</string>
+    <string name="send">send</string>
+    <string name="mapBtn">show Map</string>
+    <string name="google_map_key">AIzaSyAornyEilGRONdxs86-ptKtrev9A4Q0XZ8</string>
 </resources>
