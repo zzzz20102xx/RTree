@@ -141,6 +141,7 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
             moveCamera(new LatLng(address.getLatitude(),address.getLongitude()), DEFAULT_ZOOM);
         }
     }
+    //for search location
     private void getDeviceLocation(){
         Log.d(TAG, "getDeviceLocation: getting the devices current location");
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
