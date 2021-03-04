@@ -14,7 +14,7 @@ public interface IService {
     @POST("login")
     @FormUrlEncoded
     Observable<String> loginUser(@Field("email")String email,
-                                    @Field("password")String password);
+                                 @Field("password")String password);
 
 
 }

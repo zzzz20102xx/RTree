@@ -30,6 +30,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -39,11 +40,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.internal.schedulers.NewThreadWorker;
+
 public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener,OnMapReadyCallback,GoogleMap.OnPoiClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
     private TextView receive_view;
     private EditText mSearchText;
     private SupportMapFragment mapFragment;
     private GoogleMap mMap;
+    private Marker mMarker;
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final String TAG = "MapActivity";
@@ -51,7 +55,6 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
     private static final float DEFAULT_ZOOM = 15f;
     private boolean mLocationPermissionsGranted=false;
     private FusedLocationProviderClient mFusedLocationProviderClient;//build gradle implement location
-    private Location myLocation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,8 +140,13 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
         }
         if(list.size()>0){
             Address address=list.get(0);
+            Log.d(TAG, Integer.toString(list.size()));
             Log.d(TAG, "geolocate found a location:"+address.toString());
-            moveCamera(new LatLng(address.getLatitude(),address.getLongitude()), DEFAULT_ZOOM);
+            double latitude=address.getLatitude();
+            double longtitude=address.getLongitude();
+            LatLng result_loc=new LatLng(latitude,longtitude);
+
+            moveCamera(result_loc, DEFAULT_ZOOM);
         }
     }
     //for search location
@@ -153,9 +161,7 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
                     @Override
                     public void onComplete(@NonNull Task task) {
                         if(task.isSuccessful()){
-                            Log.d(TAG, "onComplete: found location!");
-                            myLocation = (Location) task.getResult();
-
+                            Location myLocation = (Location) task.getResult();
                             moveCamera(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()),
                                     DEFAULT_ZOOM);
 
@@ -173,6 +179,8 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
     private void moveCamera(LatLng latLng, float zoom){
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        mMarker.remove();
+        mMap.addMarker(new MarkerOptions().position(latLng));
     }
     @Override
     public void onMapReady(GoogleMap googleMap){
@@ -181,7 +189,7 @@ public class mapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
         mMap=googleMap;
 
         if(mLocationPermissionsGranted){
-            getDeviceLocation();
+            getDeviceLocation();//get current location
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
